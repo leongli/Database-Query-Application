@@ -141,32 +141,34 @@ public class A02FrontEnd extends JFrame implements ItemListener, ActionListener{
 	    Object source = e.getItemSelectable();
 
 	    if (source == eventConference) {
-	    	app.SelectBuilder("eventConference");
+	    	app.SelectBuilder("eventConference", eventConference.isSelected());
 
 	    } else if (source == eventJournal) {
-	    	app.SelectBuilder("eventJournal");
+	    	app.SelectBuilder("eventJournal", eventJournal.isSelected());
 
 	    } else if (source == eventBook) {
-	    	app.SelectBuilder("eventBook");
+	    	app.SelectBuilder("eventBook", eventBook.isSelected());
 
 	    } else if (source == dateRange) {
 	    	if (dateRange.isSelected()) {
 	            fromLabel.setEnabled(true);
 	            toLabel.setEnabled(true);
 	            fromDate.setEnabled(true);
-	            toDate.setEnabled(true);	    		
+	            toDate.setEnabled(true);	
+				app.setIsAll(false);
 	    	}
 	    	else {
 	            fromLabel.setEnabled(false);
 	            toLabel.setEnabled(false);
 	            fromDate.setEnabled(false);
-	            toDate.setEnabled(false);	    			    		
+	            toDate.setEnabled(false);	
+				app.setIsAll(true);    			    		
 	    	}
-	    	app.setIsAll(false);
-			app.setFrom(fromDate.getText());
-			app.setTo(toDate.getText());
+	    	
 	    } else if (source == allDates) {
-			app.setIsAll(true);
+			app.setIsAll(allDates.isSelected());
+			app.setTo(null);
+			app.setFrom(null);
 		}
 	    
 	}
@@ -178,7 +180,14 @@ public class A02FrontEnd extends JFrame implements ItemListener, ActionListener{
     public void actionPerformed(ActionEvent e) {
 		
     	try {
-			queryOutput.setText("Query: \n"+app.output()+"\nOutput: \n"+app.call());
+			if (dateRange.isSelected()){
+				app.setFrom(fromDate.getText());
+				app.setTo(toDate.getText()); 
+			}
+			String output=app.output();
+			System.out.println(output);
+			queryOutput.setText("Query: \n"+output+"\nOutput: \n"+app.call());
+			
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
