@@ -6,7 +6,6 @@ public class A02Main {
 	public static void main(String[] args) {
 		A02FrontEnd window = new A02FrontEnd();
 		A02MiddleTier app = new A02MiddleTier();
-		
 		window.setVisible(true);
 		window.launchApp(app);
 	}
