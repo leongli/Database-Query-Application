@@ -4,7 +4,7 @@ import java.sql.*;
 
 public class A02MiddleTier {
     //This class will contain your code for interacting with Database, acquire the query result and display it in the GUI text area.
-    
+//3421 Submission requirement connection: "jdbc:mysql://127.0.0.1:3306/a02schema" "root" "root1234"
     private String url = "jdbc:mysql://localhost:3306/a02";
     private String username = "root";
     private String password = "Haddockli1!";
