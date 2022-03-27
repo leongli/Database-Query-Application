@@ -63,19 +63,23 @@ public class A02MiddleTier {
             String output=this.output();
 
             if (output!= "NO EVENT SELECTED"){
-                String s;
+                String s,c;
+                int j=0;
                 Statement st = connection.createStatement();
                 ResultSet rs = st.executeQuery(this.output());
                 ResultSetMetaData rsMetaData = rs.getMetaData();
                 int count = rsMetaData.getColumnCount();
                 s = "";
+                c="";
                 while(rs.next()){
                     for(int i = 1; i <= count; i++){
-                        s += rs.getString(rsMetaData.getColumnName(i)) + " ";
+                        if (j==0) c+=rsMetaData.getColumnName(i) + "  |  ";
+                        s += rs.getString(rsMetaData.getColumnName(i)) + "  |  ";
                     }
+                    j=1;
                 s += "\n";
                 }
-                return s;
+                return c+"\n"+s;
             }
             
 
@@ -91,142 +95,148 @@ public class A02MiddleTier {
         else if(evC && evJ && evB){ 
             //EVENT CONFERENCE & EVENT BOOK & EVENT JOURNAL & ALL EVENT
             if(isAllDates) 
-                return "select distinct (e.ID), e.Name "
+                return "select distinct(e.ID), e.Name, NULL AS \"City\", NULL AS \"Country\", NULL AS \"EvDate\", ej.Publisher, ej.JournalName "
                 +"from ((a02.eventjournal as ej inner join a02.event as e on e.ID=ej.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID) "
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
                 +"union "
-                +"select distinct (e.ID), e.Name "
+                +"select distinct(e.ID), e.Name, NULL AS \"City\", NULL AS \"Country\", NULL AS \"EvDate\", eb.Publisher, NULL AS \"JournalName\" "
                 +"from ((a02.eventbook as eb inner join a02.event as e on e.ID=eb.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID) "
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
                 +"union "
-                +"select distinct(e.ID), e.Name "
-                +"from (a02.Event as e inner join a02.eventconference as ec on e.ID=ec.EventID);";
+                +"select distinct(e.ID), e.Name, ec.City, ec.Country, ec.EvDate, NULL AS \"Publisher\", NULL AS \"JournalName\" "
+                +"from (a02.Event as e inner join a02.eventconference as ec on e.ID=ec.EventID); ";
             //EVENT CONFERENCE & EVENT BOOK & EVENT JOURNAL & TO FROM EVENT
             else 
-                return "select distinct (e.ID), e.Name "
+                return "select distinct(e.ID), e.Name, NULL AS \"City\", NULL AS \"Country\", NULL AS \"EvDate\", ej.Publisher, ej.JournalName "
                 +"from ((a02.eventjournal as ej inner join a02.event as e on e.ID=ej.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID) "
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
                 +"where ah.ActivityDate "
                 +"between'"+this.from+"' and '"+this.to+"'"
                 +"union "
-                +"select distinct (e.ID), e.Name "
+                +"select distinct(e.ID), e.Name, NULL AS \"City\", NULL AS \"Country\", NULL AS \"EvDate\", eb.Publisher, NULL AS \"JournalName\" "
                 +"from ((a02.eventbook as eb inner join a02.event as e on e.ID=eb.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID) "
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
                 +"where ah.ActivityDate between'"+this.from+"' and '"+this.to+"'"
                 +"union "
-                +"select distinct(e.ID), e.Name "
+                +"select distinct(e.ID), e.Name, ec.City, ec.Country, ec.EvDate, NULL AS \"Publisher\", NULL AS \"JournalName\" "
                 +"from (a02.Event as e inner join a02.eventconference as ec on e.ID=ec.EventID) "
                 +"where ec.EvDate "
-                +"between'"+this.from+"' and '"+this.to+"';";
+                +"between'"+this.from+"' and '"+this.to+"'; ";
         }
         
         else if(evC && evB && evJ==false){
             //EVENT CONFERENCE & EVENT BOOK & ALL EVENT
             if(isAllDates) 
-                return "select distinct(e.ID), e.Name "
+                return "select distinct(e.ID), e.Name, ec.City, ec.Country, ec.EvDate, NULL AS \"Publisher\" "
                 +"from (a02.Event as e inner join a02.eventconference as ec on e.ID=ec.EventID) "
                 +"where ec.EvDate "
                 +"union "
-                +"select distinct (e.ID), e.Name "
+                +"select distinct (e.ID), e.Name, NULL AS \"City\", NULL AS \"Country\", NULL AS \"EvDate\", eb.Publisher "
                 +"from ((a02.eventbook as eb inner join a02.event as e on e.ID=eb.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID) ;";
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID); ";
             //EVENT CONFERENCE & EVENT BOOK & TO FROM EVENT
             else 
-                return "select distinct(e.ID), e.Name "
+                return "select distinct(e.ID), e.Name, ec.City, ec.Country, ec.EvDate, NULL AS \"Publisher\" "
                 +"from (a02.Event as e inner join a02.eventconference as ec on e.ID=ec.EventID) "
                 +"where ec.EvDate "
                 +"between'"+this.from+"' and '"+this.to+"'"
                 +"union "
-                +"select distinct (e.ID), e.Name "
+                +"select distinct (e.ID), e.Name, NULL AS \"City\", NULL AS \"Country\", NULL AS \"EvDate\", eb.Publisher "
                 +"from ((a02.eventbook as eb inner join a02.event as e on e.ID=eb.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID) "
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
                 +"where ah.ActivityDate between'"+this.from+"' and '"+this.to+"';";
         }
 
         else if(evC==false && evB && evJ){
             //EVENT BOOK & EVENT JOURNAL & ALL EVENT
             if(isAllDates) 
-                return "select distinct (e.ID), e.Name "
+                return "select distinct (e.ID), e.Name, NULL AS \"JournalName\", eb.Publisher "
                 +"from ((a02.eventbook as eb inner join a02.event as e on e.ID=eb.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID)"
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
                 +"union "
-                +"select distinct (e.ID), e.Name "
+                +"select distinct (e.ID), e.Name, ej.JournalName, ej.Publisher "
                 +"from ((a02.eventjournal as ej inner join a02.event as e on e.ID=ej.EventID) " 
-                +"inner join a02.activityhappens as ah on ah.EventID);";
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID);";
             //EVENT BOOK & EVENT JOURNAL & TO FROM EVENT
-            else return "select distinct (e.ID), e.Name "
-            +"from ((a02.eventjournal as ej inner join a02.event as e on e.ID=ej.EventID) "
-            +"inner join a02.activityhappens as ah on ah.EventID) "
+            else return "select distinct (e.ID), e.Name, NULL AS \"JournalName\", eb.Publisher "
+            +"from ((a02.eventbook as eb inner join a02.event as e on e.ID=eb.EventID) "
+            +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
             +"where ah.ActivityDate "
             +"between'"+this.from+"' and '"+this.to+"'"
             +"union "
-            +"select distinct (e.ID), e.Name "
-            +"from ((a02.eventbook as eb inner join a02.event as e on e.ID=eb.EventID) "
-            +"inner join a02.activityhappens as ah on ah.EventID) "
-            +"where ah.ActivityDate between'"+this.from+"' and '"+this.to+"';";
+            +"select distinct (e.ID), e.Name, ej.JournalName, ej.Publisher "
+            +"from ((a02.eventjournal as ej inner join a02.event as e on e.ID=ej.EventID) " 
+            +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
+            +"where ah.ActivityDate between'"+this.from+"' and '"+this.to+"'; ";
         }
 
         else if(evC && evB==false && evJ){
             //EVENT CONFERENCE & EVENT JOURNAL & ALL EVENT
             if(isAllDates) 
-                return "select distinct(e.ID), e.Name "
+                return "select distinct(e.ID), e.Name, ec.City, ec.Country, ec.EvDate, NULL AS \"JournalName\", NULL AS \"Publisher\" " 
                 +"from (a02.Event as e inner join a02.eventconference as ec on e.ID=ec.EventID) "
                 +"union "
-                +"select distinct (e.ID), e.Name "
+                +"select distinct (e.ID), e.Name, NULL AS \"City\", NULL AS \"Country\", NULL AS \"EvDate\", ej.JournalName, ej.Publisher "
                 +"from ((a02.eventjournal as ej inner join a02.event as e on e.ID=ej.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID);";
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID); ";
             //EVENT CONFERENCE & EVENT JOURNAL & TO FROM EVENT
             else 
-                return "select distinct(e.ID), e.Name "
+                return "select distinct(e.ID), e.Name, ec.City, ec.Country, ec.EvDate, NULL AS \"JournalName\", NULL AS \"Publisher\" " 
                 +"from (a02.Event as e inner join a02.eventconference as ec on e.ID=ec.EventID) "
                 +"where ec.EvDate "
                 +"between'"+this.from+"' and '"+this.to+"'"
                 +"union "
-                +"select distinct (e.ID), e.Name "
+                +"select distinct (e.ID), e.Name, NULL AS \"City\", NULL AS \"Country\", NULL AS \"EvDate\", ej.JournalName, ej.Publisher "
                 +"from ((a02.eventjournal as ej inner join a02.event as e on e.ID=ej.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID) "
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
                 +"where ah.ActivityDate "
-                +"between'"+this.from+"' and '"+this.to+"';";
+                +"between'"+this.from+"' and '"+this.to+"'; ";
         }
 
         else if(evC && evB==false && evJ==false){
             //EVENT CONFERENCE & ALL EVENT
             if(isAllDates) 
-                return "select distinct(e.ID), e.Name "
-                +"from (a02.Event as e inner join a02.eventconference as ec on e.ID=ec.EventID);";
+                return "select distinct(e.ID), e.Name, ec.City, ec.Country, ec.EvDate "
+                +"from (a02.Event as e inner join a02.eventconference as ec on e.ID=ec.EventID) "
+                +"order by e.ID;";
             //EVENT CONFERENCE & TO FROM EVENT
             else 
-                return "select distinct(e.ID), e.Name "
+                return "select distinct(e.ID), e.Name, ec.City, ec.Country, ec.EvDate "
                 +"from (a02.Event as e inner join a02.eventconference as ec on e.ID=ec.EventID) "
                 +"where ec.EvDate "
-                +"between'"+this.from+"' and '"+this.to+"';";
+                +"between'"+this.from+"' and '"+this.to+"' "
+                +"order by e.ID;";
         }
         else if(evC==false && evB==false && evJ){
             //EVENT JOURNAL & ALL EVENT
             if(isAllDates) 
-                return "select distinct (e.ID), e.Name "
+                return "select distinct (e.ID), e.Name, ej.JournalName, ej.Publisher "
                 +"from ((a02.eventjournal as ej inner join a02.event as e on e.ID=ej.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID);";
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
+                +"order by e.ID;";
             //EVENT JOURNAL & TO FROM EVENT
             else 
-                return "select distinct (e.ID), e.Name "
+                return "select distinct (e.ID), e.Name, ej.JournalName, ej.Publisher "
                 +"from ((a02.eventjournal as ej inner join a02.event as e on e.ID=ej.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID) "
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
                 +"where ah.ActivityDate "
-                +"between'"+this.from+"' and '"+this.to+"';";
+                +"between'"+this.from+"' and '"+this.to+"' "
+                +"order by e.ID;";
         }
         else if(evC==false && evB && evJ==false){
             //EVENT BOOK & ALL EVENT
             if(isAllDates) 
-                return "select distinct (e.ID), e.Name "
+                return "select distinct (e.ID), e.Name, eb.Publisher "
                 +"from ((a02.eventbook as eb inner join a02.event as e on e.ID=eb.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID);";
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
+                +"order by e.ID;";
             //EVENT BOOK & TO FROM EVENT
             else 
-                return "select distinct (e.ID), e.Name "
+                return "select distinct (e.ID), e.Name, eb.Publisher "
                 +"from ((a02.eventbook as eb inner join a02.event as e on e.ID=eb.EventID) "
-                +"inner join a02.activityhappens as ah on ah.EventID) "
-                +"where ah.ActivityDate between'"+this.from+"' and '"+this.to+"';";
+                +"inner join a02.activityhappens as ah on ah.EventID=e.ID) "
+                +"where ah.ActivityDate between'"+this.from+"' and '"+this.to+"' "
+                +"order by e.ID;";
         }
 
 		else return "QUERY ERROR";
